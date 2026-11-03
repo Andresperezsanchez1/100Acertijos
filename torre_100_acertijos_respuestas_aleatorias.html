@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Torre de los 100 Acertijos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700;900&family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        cinzelDeco: ['Cinzel Decorative', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        sanctuary: {
+                            950: '#070914',
+                            900: '#0f1329',
+                            800: '#191f3e',
+                            700: '#262e57',
+                            gold: '#e0ba62',
+                            violet: '#8b5cf6',
+                            brightGold: '#fbdf8a',
+                        }
+                    },
+                    boxShadow: {
+                        'mystic-glow': '0 0 30px rgba(139, 92, 246, 0.3)',
+                        'gold-glow': '0 0 25px rgba(224, 186, 98, 0.4)',
+                        'door-glow': '0 0 60px rgba(139, 92, 246, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #070914;
+            background-image: 
+                radial-gradient(circle at 50% 15%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
+                radial-gradient(circle at 50% 85%, rgba(15, 19, 41, 0.95) 0%, #070914 100%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Ambient Orbs/Dust */
+        .ambient-dust {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            background: radial-gradient(2px 2px at 30px 40px, #e0ba62, rgba(0,0,0,0)),
+                        radial-gradient(2px 2px at 70px 120px, #8b5cf6, rgba(0,0,0,0)),
+                        radial-gradient(1px 1px at 150px 80px, #e0ba62, rgba(0,0,0,0)),
+                        radial-gradient(2px 2px at 240px 200px, rgba(255,255,255,0.7), rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 300px 300px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070914;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #262e57;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e0ba62;
+        }
+
+        /* 3D Door Perspective */
+        .door-perspective {
+            perspective: 1200px;
+        }
+
+        .door-leaf {
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: left center;
+        }
+
+        .door-leaf-right {
+            transform-origin: right center;
+        }
+
+        .door-open-left {
+            transform: rotateY(-110deg);
+        }
+
+        .door-open-right {
+            transform: rotateY(110deg);
+        }
+
+        /* Elevator Animations */
+        @keyframes gentleDescend {
+            0% { transform: translateY(0); opacity: 1; }
+            50% { transform: translateY(20px); opacity: 0.7; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes gentleAscend {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .anim-descend {
+            animation: gentleDescend 0.6s ease-in-out;
+        }
+
+        .anim-ascend {
+            animation: gentleAscend 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Torch effect */
+        .magic-flame {
+            animation: flicker 1.8s infinite alternate ease-in-out;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0.9; transform: scale(1); filter: drop-shadow(0 0 10px #8b5cf6); }
+            50% { opacity: 0.6; transform: scale(0.92); filter: drop-shadow(0 0 6px #e0ba62); }
+            75% { opacity: 1; transform: scale(1.08); filter: drop-shadow(0 0 14px #8b5cf6); }
+        }
+
+        .option-btn {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .option-btn:hover {
+            transform: translateX(6px);
+        }
+
+        .glass-panel {
+            background: rgba(25, 31, 62, 0.75);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col justify-between min-h-screen relative font-sans">
+    <div class="ambient-dust"></div>
+
+    <!-- HEADER / SUPERIOR -->
+    <header class="relative z-10 w-full max-w-5xl mx-auto p-4 sm:p-6">
+        <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-mystic-glow">
+            <!-- Título -->
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-sanctuary-violet to-indigo-900 flex items-center justify-center text-sanctuary-gold shadow-gold-glow border border-sanctuary-gold/30">
+                    <i class="fa-solid fa-scroll text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-cinzelDeco text-lg sm:text-xl font-bold tracking-wider text-sanctuary-gold">LA TORRE DE LOS ACERTIJOS</h1>
+                    <p class="text-xs text-purple-200/70">100 enigmas de pensamiento lateral y pura intuición</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-6">
+                <!-- Fallos -->
+                <div class="text-center px-3 border-r border-purple-900/60">
+                    <span class="block text-xs text-purple-300/60 uppercase tracking-widest">Fallos</span>
+                    <span id="stat-failures" class="font-cinzel text-lg font-bold text-red-400">0</span>
+                </div>
+
+                <!-- Tiempo -->
+                <div class="text-center px-3 border-r border-purple-900/60">
+                    <span class="block text-xs text-purple-300/60 uppercase tracking-widest">Tiempo</span>
+                    <span id="stat-time" class="font-cinzel text-lg font-bold text-sanctuary-gold">00:00</span>
+                </div>
+
+                <!-- Indicador de Piso -->
+                <div class="flex items-center gap-2 bg-sanctuary-800/80 px-4 py-2 rounded-xl border border-sanctuary-gold/40 shadow-inner">
+                    <i class="fa-solid fa-dungeon text-sanctuary-gold"></i>
+                    <div>
+                        <span class="text-[10px] text-purple-300/60 block leading-none">PISO</span>
+                        <span id="current-floor-display" class="font-cinzel text-xl font-extrabold text-white leading-none">1 / 100</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Progreso -->
+        <div class="mt-3 w-full bg-sanctuary-950 rounded-full h-3 p-0.5 border border-sanctuary-violet/30 shadow-inner overflow-hidden">
+            <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-purple-800 via-sanctuary-violet to-sanctuary-gold rounded-full transition-all duration-500 shadow-gold-glow" style="width: 1%;"></div>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL DEL JUEGO -->
+    <main id="game-container" class="relative z-10 my-auto w-full max-w-4xl mx-auto p-4 flex flex-col items-center justify-center">
+
+        <!-- ================= NIVEL 1: LA PUERTA DE LOS ACERTIJOS ================= -->
+        <div id="floor-1-view" class="w-full flex flex-col items-center justify-center transition-all duration-500">
+            <div class="text-center mb-6">
+                <h2 class="font-cinzelDeco text-2xl sm:text-3xl font-extrabold text-sanctuary-gold tracking-wide">EL PORTAL DEL INGENIO</h2>
+                <p class="text-purple-200/80 text-sm sm:text-base mt-1 max-w-md mx-auto">Para iniciar tu viaje por los 100 acertijos, pulsa el sello místico grabado en la gran puerta.</p>
+            </div>
+
+            <!-- Marco de la Puerta Mística -->
+            <div class="door-perspective relative w-72 h-96 sm:w-80 sm:h-[420px] rounded-t-full bg-sanctuary-900 border-4 border-sanctuary-gold/40 shadow-door-glow flex items-center justify-center overflow-hidden">
+                <!-- Fondo interior que se ve al abrir la puerta -->
+                <div class="absolute inset-0 bg-gradient-to-b from-purple-900/40 via-sanctuary-950 to-black flex flex-col items-center justify-center text-center p-6">
+                    <i class="fa-solid fa-wand-magic-sparkles text-sanctuary-gold text-4xl mb-4 animate-bounce"></i>
+                    <p class="font-cinzel text-sanctuary-gold font-bold text-lg">¡EL SANTUARIO SE ABRE!</p>
+                    <p class="text-xs text-purple-200/70 mt-2">Pon a prueba tu agudeza mental.</p>
+                </div>
+
+                <!-- Hoja Izquierda de la Puerta -->
+                <div id="door-left" class="door-leaf absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-sanctuary-900 to-sanctuary-800 border-r-2 border-sanctuary-gold/40 flex flex-col items-center justify-center cursor-pointer shadow-2xl group">
+                    <div class="absolute inset-2 border border-purple-500/20 rounded-tl-full pointer-events-none"></div>
+                    <div class="absolute top-1/4 left-3 w-3 h-8 bg-purple-950 rounded-sm">
+                        <div class="w-4 h-4 bg-purple-400 rounded-full magic-flame -mt-2 -ml-0.5 blur-xs"></div>
+                    </div>
+                </div>
+
+                <!-- Hoja Derecha de la Puerta -->
+                <div id="door-right" class="door-leaf door-leaf-right absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-sanctuary-900 to-sanctuary-800 border-l-2 border-sanctuary-gold/40 flex flex-col items-center justify-center cursor-pointer shadow-2xl group">
+                    <div class="absolute inset-2 border border-purple-500/20 rounded-tr-full pointer-events-none"></div>
+                    <div class="absolute top-1/4 right-3 w-3 h-8 bg-purple-950 rounded-sm">
+                        <div class="w-4 h-4 bg-purple-400 rounded-full magic-flame -mt-2 -ml-0.5 blur-xs"></div>
+                    </div>
+                </div>
+
+                <!-- Sello Grabado Central ("1") -->
+                <button id="door-btn" onclick="openFirstDoor()" class="absolute z-20 w-24 h-24 rounded-full bg-gradient-to-br from-sanctuary-gold via-amber-600 to-purple-900 text-sanctuary-950 font-cinzel text-5xl font-extrabold flex items-center justify-center shadow-gold-glow border-4 border-amber-200 transition-transform duration-300 hover:scale-110 active:scale-95 cursor-pointer">
+                    <span class="drop-shadow-md">1</span>
+                </button>
+            </div>
+
+            <p class="text-xs text-sanctuary-gold/70 mt-4 animate-pulse"><i class="fa-solid fa-hand-pointer mr-1"></i> Presiona el sello '1' para comenzar</p>
+        </div>
+
+
+        <!-- ================= PISOS 2 AL 100: ACERTIJOS Y TEST ================= -->
+        <div id="riddle-view" class="w-full hidden max-w-2xl">
+            <div id="riddle-card" class="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl border border-sanctuary-gold/30 relative overflow-hidden">
+                
+                <!-- Encabezado del acertijo -->
+                <div class="flex items-center justify-between border-b border-purple-900/60 pb-4 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-sanctuary-gold animate-ping"></span>
+                        <span id="riddle-type" class="text-xs font-semibold uppercase tracking-widest text-sanctuary-gold">ACERTIJO CLÁSICO</span>
+                    </div>
+                    <span id="riddle-difficulty" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-sanctuary-800 text-purple-200 border border-purple-500/20">Dificultad: Inicial</span>
+                </div>
+
+                <!-- Enunciado del Acertijo -->
+                <div class="min-h-[110px] flex items-center justify-center text-center my-2">
+                    <h3 id="riddle-question" class="font-cinzel text-lg sm:text-xl md:text-2xl font-bold text-gray-100 leading-relaxed">
+                        Cargando acertijo...
+                    </h3>
+                </div>
+
+                <!-- Aviso de penalización de -1 Piso -->
+                <div class="bg-purple-950/50 border border-purple-700/30 rounded-xl p-2.5 mb-6 flex items-center justify-center gap-2 text-xs text-purple-200/80">
+                    <i class="fa-solid fa-circle-info text-sanctuary-gold"></i>
+                    <span>Si fallas, solo <strong>descenderás 1 piso</strong>.</span>
+                </div>
+
+                <!-- Opciones (4 Botones) -->
+                <div id="options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <!-- Generado por JS -->
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= PANTALLA DE VICTORIA ================= -->
+        <div id="victory-view" class="w-full hidden max-w-2xl text-center">
+            <div class="glass-panel rounded-3xl p-8 sm:p-10 shadow-gold-glow border-2 border-sanctuary-gold relative">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-sanctuary-gold/20 flex items-center justify-center border-2 border-sanctuary-gold text-sanctuary-gold text-4xl animate-bounce">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h2 class="font-cinzelDeco text-3xl sm:text-4xl font-extrabold text-sanctuary-gold mb-2">¡HAS CONQUISTADO LA TORRE!</h2>
+                <p class="text-purple-200/90 text-sm sm:text-base mb-6">Has demostrado una mente brillante resolviendo los 100 acertijos del Santuario del Ingenio.</p>
+
+                <!-- Resumen -->
+                <div class="grid grid-cols-2 gap-4 bg-sanctuary-950/80 p-4 rounded-2xl mb-8 border border-sanctuary-gold/20">
+                    <div class="p-3">
+                        <span class="block text-xs text-purple-300/60">TIEMPO EMPLEADO</span>
+                        <span id="final-time" class="font-cinzel text-2xl font-bold text-sanctuary-gold">00:00</span>
+                    </div>
+                    <div class="p-3">
+                        <span class="block text-xs text-purple-300/60">FALLOS TOTALES</span>
+                        <span id="final-failures" class="font-cinzel text-2xl font-bold text-purple-300">0</span>
+                    </div>
+                </div>
+
+                <button onclick="restartGame()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-sanctuary-gold to-amber-600 text-sanctuary-950 font-cinzel font-bold text-lg shadow-gold-glow transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> VOLVER A INTENTAR
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- NOTIFICACIÓN DE ASCENSO / DESCENSO -->
+    <div id="floor-toast" class="fixed inset-0 z-50 pointer-events-none flex items-center justify-center transition-opacity duration-300 opacity-0">
+        <div id="toast-card" class="glass-panel px-8 py-6 rounded-2xl shadow-2xl text-center transform transition-all duration-300 scale-90 border-2">
+            <div id="toast-icon" class="text-4xl mb-2"></div>
+            <h4 id="toast-title" class="font-cinzel text-2xl font-extrabold mb-1"></h4>
+            <p id="toast-desc" class="text-sm text-purple-200/80"></p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="relative z-10 w-full text-center py-4 text-xs text-purple-400/50 border-t border-purple-900/40 mt-auto">
+        <p>La Torre de los 100 Acertijos &copy; Desafío de Pensamiento Lateral</p>
+    </footer>
+
+    <!-- LÓGICA JAVASCRIPT -->
+    <script>
+        // ================= BANCO DE 100 ACERTIJOS EXCLUSIVOS =================
+        const RIDDLES = {
+            // ----- PISOS 2 AL 20: ADIVINANZAS INTUITIVAS Y CONCEPTOS -----
+            2: { type: "ADIVINANZA", difficulty: "Fácil", question: "Tengo agujeros arriba y abajo, a la izquierda y a la derecha, pero aun así contengo agua. ¿Qué soy?", options: ["Una esponja", "Una red de pescar", "Un colador", "Una nube"], correct: 0 },
+            3: { type: "ACERTIJO", difficulty: "Fácil", question: "Vuelo sin alas, lloro sin ojos. Donde voy, la oscuridad me sigue. ¿Qué soy?", options: ["Una nube", "El viento", "La niebla", "Una sombra"], correct: 0 },
+            4: { type: "JUEGO DE CONCEPTOS", difficulty: "Fácil", question: "Si me tienes, quieres compartirme. Si me compartes, dejas de tenerme. ¿Qué soy?", options: ["Un secreto", "Una manzana", "El dinero", "El conocimiento"], correct: 0 },
+            5: { type: "PENSAMIENTO LATERAL", difficulty: "Fácil", question: "¿Qué se vuelve más húmedo cuanto más seca?", options: ["Una toalla", "El sol", "El viento", "Una esponja"], correct: 0 },
+            6: { type: "ADIVINANZA CLÁSICA", difficulty: "Fácil", question: "Tengo dientes pero nunca muerdo. Peino sin tener manos. ¿Qué soy?", options: ["Un peine", "Un rastrillo", "Un tenedor", "Un engranaje"], correct: 0 },
+            7: { type: "ACERTIJO DE PALABRAS", difficulty: "Fácil", question: "¿Qué tiene llaves pero no abre ninguna cerradura, y espacio pero no tiene habitaciones?", options: ["Un teclado", "Un piano", "Un mapa", "Un libro de música"], correct: 0 },
+            8: { type: "NATURALEZA", difficulty: "Fácil", question: "Nazco pequeña en el bosque, crezco sin respirar y muero si me toca el agua. ¿Qué soy?", options: ["El fuego", "Una planta", "La chispa", "Una hoja seca"], correct: 0 },
+            9: { type: "ADIVINANZA", difficulty: "Fácil", question: "Cuanto más avanza el día, más corta me vuelvo; pero al atardecer crezco de nuevo. ¿Qué soy?", options: ["La sombra", "La vela", "La vida", "La paciencia"], correct: 0 },
+            10: { type: "PENSAMIENTO LATERAL", difficulty: "Fácil", question: "¿Qué se rompe en el agua pero nunca en la tierra?", options: ["Un reflejo", "Una ola", "El hielo", "Una burbuja"], correct: 0 },
+            11: { type: "ACERTIJO", difficulty: "Fácil", question: "Tengo un cuello pero no tengo cabeza. Visto a diario pero no tengo cuerpo. ¿Qué soy?", options: ["Una camisa", "Una botella", "Un jarrón", "Un abrigo"], correct: 0 },
+            12: { type: "ADIVINANZA", difficulty: "Fácil", question: "Puedo llenar una habitación entera sin ocupar ningún espacio. ¿Qué soy?", options: ["La luz", "El aire", "El humo", "El aroma"], correct: 0 },
+            13: { type: "PENSAMIENTO LATERAL", difficulty: "Fácil", question: "Si me alimentas, vivo. Si me das de beber, muero. ¿Qué soy?", options: ["El fuego", "Una planta", "El hambre", "La sed"], correct: 0 },
+            14: { type: "ACERTIJO", difficulty: "Fácil", question: "Tengo ojos pero no puedo ver nada. Nazco bajo tierra y tengo piel. ¿Qué soy?", options: ["Una patata", "Una aguja", "Un topo", "Una cueva"], correct: 0 },
+            15: { type: "ADIVINANZA", difficulty: "Fácil", question: "Vuelo de noche, duermo de día y nunca verás plumas en mi anatomía. ¿Qué soy?", options: ["Un murciélago", "Un búho", "La luna", "Una polilla"], correct: 0 },
+            16: { type: "ACERTIJO", difficulty: "Fácil", question: "Paso por el agua y no me mojo, paso por el fuego y no me quemo. ¿Qué soy?", options: ["La sombra", "El aire", "El cristal", "El reflejo"], correct: 0 },
+            17: { type: "PENSAMIENTO LATERAL", difficulty: "Fácil", question: "No tengo voz pero puedo contarte las historias más increíbles. ¿Qué soy?", options: ["Un libro", "Un cuadro", "El silencio", "Un sueño"], correct: 0 },
+            18: { type: "ADIVINANZA", difficulty: "Fácil", question: "Tengo pies pero no camino, tengo cama pero nunca duermo. ¿Qué soy?", options: ["Un río", "Un árbol", "Una montaña", "Un arroyo"], correct: 0 },
+            19: { type: "ACERTIJO", difficulty: "Fácil", question: "Camino sin patas, me muevo sin alas y me deslizo sin brazos. ¿Qué soy?", options: ["Una serpiente", "El agua", "El viento", "La niebla"], correct: 0 },
+            20: { type: "CONCEPTUAL", difficulty: "Fácil", question: "Siempre estoy frente a ti, pero nunca me puedes alcanzar ni ver del todo. ¿Qué soy?", options: ["El futuro", "El horizonte", "Tu reflejo", "El mañana"], correct: 0 },
+
+            // ----- PISOS 21 AL 40: DEDUCCIÓN DE PENSAMIENTO LATERAL -----
+            21: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "Un hombre sale a la calle bajo una lluvia torrencial sin paraguas ni sombrero, pero no se le moja ni un solo pelo de la cabeza. ¿Por qué?", options: ["Es totalmente calvo", "Estaba bajo un tejado", "La lluvia era muy fina", "Usaba abrigo con capucha"], correct: 0 },
+            22: { type: "ACERTIJO DE INGENIO", difficulty: "Medio", question: "¿Qué es lo que puedes sostener con la mano derecha, pero NUNCA con la mano izquierda?", options: ["Tu codo izquierdo", "Tu mano izquierda", "Tu muñeca derecha", "Tu pulgar derecho"], correct: 0 },
+            23: { type: "ADIVINANZA", difficulty: "Medio", question: "Cuanto más hay de mí, menos puedes ver. ¿Qué soy?", options: ["La oscuridad", "La niebla", "El humo", "La ceguera"], correct: 0 },
+            24: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "Un camión se quedó atascado bajo un puente por solo 2 cm. Un niño sugirió la solución correcta para pasarlo sin romper nada. ¿Qué sugirió?", options: ["Desinflar un poco las ruedas", "Ir a toda velocidad", "Llevarlo marcha atrás", "Engrasar el techo del camión"], correct: 0 },
+            25: { type: "ENIGMA", difficulty: "Medio", question: "Tengo un corazón que no late, un cuerpo de madera y un alma de grafito. ¿Qué soy?", options: ["Un lápiz", "Un árbol", "Una estatua", "Un violín"], correct: 0 },
+            26: { type: "ADIVINANZA", difficulty: "Medio", question: "Si me nombras me rompes, pero si me guardas te acompaño. ¿Qué soy?", options: ["El silencio", "Una promesa", "Un cristal", "Un secreto"], correct: 0 },
+            27: { type: "INGENIO", difficulty: "Medio", question: "¿Qué se compra para comer pero nunca se come?", options: ["El plato o cubierto", "La sal", "La servilleta", "La carta del menú"], correct: 0 },
+            28: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "Dos madres y dos hijas se sentaron a tomar el té. Solo compraron 3 tazas y cada una tomó una taza entera. ¿Cómo es posible?", options: ["Eran abuela, madre e hija", "Una no quiso beber", "Compartieron la tercera", "Pidieron otra taza gratis"], correct: 0 },
+            29: { type: "ACERTIJO", difficulty: "Medio", question: "No tengo carne ni hueso, pero tengo cinco dedos propios. ¿Qué soy?", options: ["Un guante", "Una mano de cera", "Una sombra", "Un robot"], correct: 0 },
+            30: { type: "ADIVINANZA", difficulty: "Medio", question: "Me puedes meter en un bolsillo pequeñito, pero puedo llenar toda una casa si me enciendes. ¿Qué soy?", options: ["Una cerilla o vela", "Una linterna", "Una llave", "Una bombilla"], correct: 0 },
+            31: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "¿Qué sube y baja constantemente sin moverse del lugar donde está?", options: ["La temperatura", "La marea", "La escalera", "El ascensor"], correct: 2 },
+            32: { type: "INGENIO", difficulty: "Medio", question: "Si un gato está parado en la puerta de una casa, ¿por qué lado tiene más pelo?", options: ["Por el lado de fuera", "Por la espalda", "Por la tripa", "Por ambos lados igual"], correct: 0 },
+            33: { type: "ADIVINANZA", difficulty: "Medio", question: "Puedo caer desde lo más alto de un rascacielos y no hacerme daño, pero si caigo al agua me destruyo. ¿Qué soy?", options: ["Un papel", "Una pluma", "Una sombra", "Una hoja"], correct: 0 },
+            34: { type: "ENIGMA", difficulty: "Medio", question: "Tiene raíces que nadie ve, es más alto que cualquier árbol, sube y sube pero nunca crece. ¿Qué es?", options: ["Una montaña", "El cielo", "Una nube", "El humo"], correct: 0 },
+            35: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "¿Qué palabra de 7 letras se convierte en una de 2 letras si le quitas 5 letras?", options: ["Heroína (Hero)", "Docena", "Semana", "Ninguna"], correct: 1 },
+            36: { type: "ADIVINANZA", difficulty: "Medio", question: "Subo pero nunca bajo, aumento cada año pero nadie me puede reducir. ¿Qué soy?", options: ["La edad", "La altura", "La sabiduría", "El tiempo"], correct: 0 },
+            37: { type: "CONCEPTUAL", difficulty: "Medio", question: "Vengo antes que el ayer, pero llego después del mañana en el orden alfabético. ¿Qué palabra soy?", options: ["Anteayer", "El futuro", "El pasado", "El presente"], correct: 0 },
+            38: { type: "INGENIO", difficulty: "Medio", question: "¿Qué puede viajar por todo el mundo mientras se queda acurrucado en una esquina?", options: ["Un sello postal", "Una carta", "Una maleta", "La brújula"], correct: 0 },
+            39: { type: "ADIVINANZA", difficulty: "Medio", question: "Tengo ciudades sin gente, ríos sin agua y bosques sin árboles. ¿Qué soy?", options: ["Un mapa", "Un globo terráqueo", "Un cuadro", "Un libro de geografía"], correct: 0 },
+            40: { type: "PENSAMIENTO LATERAL", difficulty: "Medio", question: "Un hombre empuja su coche hasta un hotel y al llegar sabe inmediatamente que está arruinado. ¿Por qué?", options: ["Jugaba al Monopoly", "El coche se averió", "El hotel era muy caro", "Le robaron la cartera"], correct: 0 },
+
+            // ----- PISOS 41 AL 60: DESAFÍOS CONCEPTUALES -----
+            41: { type: "ACERTIJO CLÁSICO", difficulty: "Medio - Alto", question: "Nací en el mar, fui secado al sol y ahora lloro cada vez que me arrojan al agua. ¿Qué soy?", options: ["La sal", "El coral", "Una esponja", "La arena"], correct: 0 },
+            42: { type: "ENIGMA DE PALABRAS", difficulty: "Medio - Alto", question: "¿Qué es algo que pertenece completamente a ti, pero todas las demás personas lo usan mucho más que tú?", options: ["Tu nombre", "Tu voz", "Tu cara", "Tu número de teléfono"], correct: 0 },
+            43: { type: "PENSAMIENTO LATERAL", difficulty: "Medio - Alto", question: "Un hombre vive en el piso 20 de un edificio. Todos los días baja en ascensor al piso 1 para ir a trabajar. Al volver, sube en ascensor hasta el piso 10 y sube a pie el resto... a menos que llueva. ¿Por qué?", options: ["Es de baja estatura y usa el paraguas para pulsar el botón 20", "Le gusta hacer ejercicio", "El ascensor falla del piso 10 al 20", "El piso 10 es su oficina"], correct: 0 },
+            44: { type: "ADIVINANZA MÍSTICA", difficulty: "Medio - Alto", question: "Nunca fui, siempre seré. Nadie me ha visto ni me verá jamás, pero en mí confían todos los seres vivos. ¿Qué soy?", options: ["El mañana / Futuro", "El destino", "La esperanza", "El universo"], correct: 0 },
+            45: { type: "INGENIO", difficulty: "Medio - Alto", question: "¿Qué ocurre una vez en un minuto, dos veces en un momento y ninguna vez en cien años?", options: ["La letra 'M'", "Un parpadeo", "Un latido", "Un suspiro"], correct: 0 },
+            46: { type: "PENSAMIENTO LATERAL", difficulty: "Medio - Alto", question: "Un pastor tiene 17 ovejas y se le mueren todas menos 9. ¿Cuántas ovejas le quedan al pastor?", options: ["9 ovejas", "8 ovejas", "0 ovejas", "17 ovejas"], correct: 0 },
+            47: { type: "ADIVINANZA", difficulty: "Medio - Alto", question: "Si me miras a la cara no me ves; si me miras a la espalda, ves a todo el mundo menos a ti. ¿Qué soy?", options: ["Un espejo", "Una ventana", "Un retrato", "La sombra"], correct: 0 },
+            48: { type: "ENIGMA", difficulty: "Medio - Alto", question: "Tengo miles de hojas pero no soy un árbol. Puedo enseñarte mundos pero no me muevo. ¿Qué soy?", options: ["Un libro", "Un bosque", "Un álbum de fotos", "Un periódico"], correct: 0 },
+            49: { type: "PENSAMIENTO LATERAL", difficulty: "Medio - Alto", question: "Antes de que se descubriera el monte Everest, ¿cuál era la montaña más alta de la Tierra?", options: ["El monte Everest", "El K2", "El Kilimanjaro", "El Teide"], correct: 0 },
+            50: { type: "ACERTIJO CENTRAL", difficulty: "Medio - Alto", question: "Si me lanzas desde un tejado me rompo, pero si me das una sonrisa te devuelvo otra igual. ¿Qué soy?", options: ["Un espejo", "Un plato", "Una foto", "Una copa"], correct: 0 },
+            51: { type: "ADIVINANZA", difficulty: "Avanzado", question: "Vuelo sin alas, murmuro sin boca, tengo lecho pero no duermo y destruyo todo si me enfurezco. ¿Qué soy?", options: ["El viento / El río", "El huracán", "La tormenta", "El mar"], correct: 0 },
+            52: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "¿Qué es lo que se vuelve más grande si le añades cosas, pero también más grande si le quitas cosas?", options: ["Un agujero", "Una deuda", "La nieve", "Una bola de algodón"], correct: 0 },
+            53: { type: "INGENIO", difficulty: "Avanzado", question: "¿Qué se rompe en el instante exacto en que dices su nombre?", options: ["El silencio", "Un secreto", "Una promesa", "La paz"], correct: 0 },
+            54: { type: "ADIVINANZA CLÁSICA", difficulty: "Avanzado", question: "Tengo cuatro patas por la mañana, dos al mediodía y tres por la noche. ¿Qué soy?", options: ["El ser humano", "Una mesa", "El sol", "Un reloj"], correct: 0 },
+            55: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "Si en una carrera adelantas al segundo clasificado, ¿en qué posición quedas?", options: ["Segundo", "Primero", "Tercero", "Depende de la velocidad"], correct: 0 },
+            56: { type: "ENIGMA", difficulty: "Avanzado", question: "Soy más ligero que una pluma, pero ni el hombre más fuerte del mundo puede sostenerme más de 5 minutos. ¿Qué soy?", options: ["La respiración", "Un pensamiento", "Una burbuja", "El humo"], correct: 0 },
+            57: { type: "ADIVINANZA", difficulty: "Avanzado", question: "Parezco oro pero no lo soy, me encuentras en el mar y te doy sabor. ¿Qué soy?", options: ["La sal", "La arena", "El ámbar", "El sol"], correct: 0 },
+            58: { type: "INGENIO", difficulty: "Avanzado", question: "¿Qué tiene orejas pero no puede escuchar nada?", options: ["Una taza", "Un perro disecado", "Un libro", "Una aguja"], correct: 0 },
+            59: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "Un gato negro cruza una calle sin alumbrado. No hay luna y un coche va con los faros apagados. Sin embargo, el conductor frena a tiempo. ¿Cómo vio al gato?", options: ["Era de día", "El gato brillaba en la oscuridad", "Escuchó al gato", "Llevaba visión nocturna"], correct: 0 },
+            60: { type: "CONCEPTUAL", difficulty: "Avanzado", question: "Crezco sin comer, me muevo sin patas y destruyo bosques enteros sin tener boca. ¿Qué soy?", options: ["El fuego", "El viento", "La plaga", "El agua"], correct: 0 },
+
+            // ----- PISOS 61 AL 80: ENIGMAS DE INGENIO PROFUNDO -----
+            61: { type: "ADIVINANZA", difficulty: "Avanzado", question: "Llevo mi casa a cuestas, camino despacio y dejo un rastro de plata por donde paso. ¿Qué soy?", options: ["Un caracol", "Una tortuga", "Un ermitaño", "Una babosa"], correct: 0 },
+            62: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "Un hombre miraba un retrato y dijo: 'No tengo hermanos ni hermanas, pero el padre de este hombre es el hijo de mi padre'. ¿Quién está en la imagen?", options: ["Su hijo", "Su padre", "Él mismo", "Su nieto"], correct: 0 },
+            63: { type: "ENIGMA DE PALABRAS", difficulty: "Avanzado", question: "¿Qué empieza con la letra 'E', termina con la letra 'E' y contiene solo una letra?", options: ["Un sobre (Envelope)", "Un enlace", "Un estuche", "El aire"], correct: 0 },
+            64: { type: "ADIVINANZA", difficulty: "Avanzado", question: "No tengo voz pero lamento, no tengo cuerpo pero te sigo en la noche. ¿Qué soy?", options: ["El viento nocturno", "La sombra", "El eco", "El miedo"], correct: 0 },
+            65: { type: "INGENIO", difficulty: "Avanzado", question: "¿Qué se puede romper sin tocarlo ni caer al suelo?", options: ["Una promesa", "Un vaso", "Un espejo", "La voz"], correct: 0 },
+            66: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "¿Cuántos animales de cada especie introdujo Moisés en el arca?", options: ["Ninguno, fue Noé", "Dos de cada especie", "Siete pares", "Cuatro de cada"], correct: 0 },
+            67: { type: "ADIVINANZA CLÁSICA", difficulty: "Avanzado", question: "Tengo un solo ojo en mi cabeza y un largo hilo tras de mí. Hago ropa para otros pero yo estoy desnuda. ¿Qué soy?", options: ["Una aguja", "Una araña", "Una caña de pescar", "Una rueca"], correct: 0 },
+            68: { type: "CONCEPTUAL", difficulty: "Avanzado", question: "Si me necesitas me tiras al agua; cuando ya no me usas, me recoges. ¿Qué soy?", options: ["El ancla", "La red de pescar", "El anzuelo", "La boya"], correct: 0 },
+            69: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "Un hombre entra en un bar y pide un vaso de agua. El camarero saca una escopeta y le apunta. El hombre dice 'gracias' y se va feliz. ¿Por qué?", options: ["Tenía hipo y el susto se lo quitó", "Era una broma", "No tenía dinero para pagar", "Buscaba emociones fuertes"], correct: 0 },
+            70: { type: "ENIGMA", difficulty: "Avanzado", question: "Nazco en el cielo, duermo en la tierra y me evaporo al tocar el sol. ¿Qué soy?", options: ["La nieve / La gota de lluvia", "La niebla", "La nube", "El rocío"], correct: 0 },
+            71: { type: "ADIVINANZA", difficulty: "Avanzado", question: "Tengo lengua pero no hablo, tengo suela pero no soy zapatero. ¿Qué soy?", options: ["Un zapato", "Un pez", "Un cinturón", "Un caracol"], correct: 0 },
+            72: { type: "INGENIO", difficulty: "Avanzado", question: "¿Qué tiene 88 llaves pero no abre ninguna puerta?", options: ["Un piano", "Un teclado de ordenador", "Un cerrajero", "Un llavero grande"], correct: 0 },
+            73: { type: "PENSAMIENTO LATERAL", difficulty: "Avanzado", question: "Un tren eléctrico viaja hacia el Norte a 100 km/h. El viento sopla hacia el Oeste. ¿Hacia dónde echa el humo?", options: ["Los trenes eléctricos no echan humo", "Hacia el Este", "Hacia el Sur", "Hacia el Oeste"], correct: 0 },
+            74: { type: "CONCEPTUAL", difficulty: "Avanzado", question: "Puedo ser dulce o amarga, se dice que curo el alma, pero si te falta aire me pierdes. ¿Qué soy?", options: ["La verdad", "La medicina", "La palabra", "La risa"], correct: 0 },
+            75: { type: "ADIVINANZA", difficulty: "Avanzado", question: "Cuanto más rápido me sigues, más difícil me vuelve alcanzar. No peso nada pero te canso al correr. ¿Qué soy?", options: ["La sombra", "El viento", "La respiración", "El horizonte"], correct: 0 },
+            76: { type: "INGENIO", difficulty: "Leyenda", question: "¿Qué palabra se escribe incorrectamente en todos los diccionarios de la lengua española?", options: ["Incorrectamente", "Ninguna", "Falso", "Error"], correct: 0 },
+            77: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "Si tienes 3 manzanas en una mano y 4 en la otra, ¿qué tienes en total?", options: ["Unas manos muy grandes", "7 manzanas", "Mucha fruta", "Una manzana roja"], correct: 0 },
+            78: { type: "ENIGMA MÍSTICO", difficulty: "Leyenda", question: "Dormido te visito, despierto desaparezco. Puedo llevarte a castillos o a abismos sin moverte del lecho. ¿Qué soy?", options: ["El sueño", "La mente", "El pensamiento", "La noche"], correct: 0 },
+            79: { type: "ADIVINANZA CLÁSICA", difficulty: "Leyenda", question: "Nadie me quiere tener, pero cuando me tienen nadie me quiere perder. ¿Qué soy?", options: ["Un pleito / Una demanda", "Una enfermedad", "Una deuda", "Una sombra"], correct: 0 },
+            80: { type: "CONCEPTUAL", difficulty: "Leyenda", question: "Vivo sin cuerpo, oigo sin oídos, hablo sin boca y me formo en los valles. ¿Qué soy?", options: ["El eco", "El viento", "El fantasma", "El susurro"], correct: 0 },
+
+            // ----- PISOS 81 AL 99: MAESTRÍA EN PENSAMIENTO LATERAL -----
+            81: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "Un avión se estrella justo en la frontera entre España y Francia. ¿Dónde entierran a los supervivientes?", options: ["A los supervivientes no se les entierra", "En España", "En Francia", "En la frontera"], correct: 0 },
+            82: { type: "INGENIO", difficulty: "Leyenda", question: "¿Qué es lo que aumenta su valor al ponerlo al revés?", options: ["El número 6", "Un reloj de arena", "Un espejo", "Un calcetín"], correct: 0 },
+            83: { type: "ADIVINANZA", difficulty: "Leyenda", question: "Tengo copa pero no bebo, tengo tronco pero no tengo piernas, tengo hojas pero no escribo. ¿Qué soy?", options: ["Un árbol", "Un sombrero", "Un libro", "Una palmera"], correct: 0 },
+            84: { type: "ENIGMA DE FILOSOFÍA", difficulty: "Leyenda", question: "Puedo construir imperios y destruirlos en segundos. No me puedes tocar pero cambio la realidad. ¿Qué soy?", options: ["La idea / Pensamiento", "El tiempo", "El dinero", "La palabra"], correct: 0 },
+            85: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "Una mujer dio a luz a dos hijos el mismo día, a la misma hora y en el mismo año, pero no eran gemelos. ¿Cómo es posible?", options: ["Eran trillizos", "Nacieron en lugares distintos", "Eran de distintos padres", "Fue un error de registro"], correct: 0 },
+            86: { type: "ADIVINANZA", difficulty: "Leyenda", question: "Tengo arrugas pero no soy viejo, me estiras para usarme y si me quemas te huelo. ¿Qué soy?", options: ["El papel", "El cuero", "La tela", "El cerebro"], correct: 0 },
+            87: { type: "INGENIO", difficulty: "Leyenda", question: "¿Qué se puede sostener en la mano izquierda pero nunca en la mano derecha?", options: ["El codo derecho", "La mano derecha", "Un guante izquierdo", "Tu muñeca izquierda"], correct: 0 },
+            88: { type: "CONCEPTUAL", difficulty: "Leyenda", question: "Sin mí no hay música, sin mí no hay verso. Vuelo en el aire al hablar y me extingo al callar. ¿Qué soy?", options: ["El sonido / La voz", "El ritmo", "El aire", "El silencio"], correct: 0 },
+            89: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "¿Qué invento humano permite mirar a través de una pared de ladrillos?", options: ["La ventana", "El telescopio", "El espejo", "El taladro"], correct: 0 },
+            90: { type: "ADIVINANZA CLÁSICA", difficulty: "Leyenda", question: "Fui hecha para proteger tus pasos, piso el barro y la tierra, pero me quitan antes de entrar a descansar. ¿Qué soy?", options: ["La zapatilla / El calzado", "La alfombra", "La calceta", "La puerta"], correct: 0 },
+            91: { type: "ENIGMA", difficulty: "Leyenda", question: "Si me miras soy invisible, si me escuchas soy callado, pero si me sientes te congelo el aliento. ¿Qué soy?", options: ["El miedo", "El frío", "El viento", "La muerte"], correct: 0 },
+            92: { type: "INGENIO", difficulty: "Leyenda", question: "¿Qué alimento no se pudre nunca y puede conservarse comestible durante miles de años?", options: ["La miel", "El arroz", "La sal", "El aceite"], correct: 0 },
+            93: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "¿Cuántos meses del año tienen 28 días?", options: ["Los 12 meses", "Solo Febrero", "Ninguno", "Seis meses"], correct: 0 },
+            94: { type: "CONCEPTUAL", difficulty: "Leyenda", question: "Soy ligera como una pluma, pero el hombre más sabio del mundo no puede sostenerse sobre mí sin caer. ¿Qué soy?", options: ["Una burbuja", "La nada", "El agua", "La ilusión"], correct: 0 },
+            95: { type: "ADIVINANZA MÍSTICA", difficulty: "Leyenda", question: "Nací sin padre, morí sin madre y me envolvieron en una sábana que nunca se tejió. ¿Qué soy?", options: ["La nieve", "La niebla", "El hielo", "El vapor"], correct: 0 },
+            96: { type: "INGENIO", difficulty: "Leyenda", question: "¿Qué se necesita para encender una vela?", options: ["Que esté apagada", "Una cerilla", "Fuego", "Cera"], correct: 0 },
+            97: { type: "PENSAMIENTO LATERAL", difficulty: "Leyenda", question: "Un hombre afirma que puede predecir el resultado exacto de cualquier partido de fútbol antes de que empiece. ¿Cómo lo hace?", options: ["El resultado siempre es 0 a 0 antes de empezar", "Tiene contactos en los equipos", "Usa la estadística", "Es un adivino verdadero"], correct: 0 },
+            98: { type: "ENIGMA SUPREMO", difficulty: "Leyenda", question: "Cuanto más me buscas menos me encuentras, pero cuando me dejas de buscar aparezco ante ti. ¿Qué soy?", options: ["La paciencia / La calma", "La respuesta", "La suerte", "El objeto perdido"], correct: 0 },
+            99: { type: "PENÚLTIMO DESAFÍO", difficulty: "Divino", question: "Tengo llaves pero no abro puertas, tengo notas pero no escribo cartas, doy alegría sin hablar. ¿Qué soy?", options: ["Un piano / Instrumento musical", "Un ruiseñor", "Un libro de música", "Un cascabel"], correct: 0 },
+
+            // ----- PISO 100: EL ACERTIJO DEFINITIVO DEL SANTUARIO -----
+            100: { 
+                type: "EL ACERTIJO SUPREMO", 
+                difficulty: "Divino", 
+                question: "En la cima de los 100 acertijos: Tres dioses están sentados en el altar. El Dios de la Verdad siempre dice la verdad, el Dios de la Mentira siempre miente, y el Dios del Azar responde al azar. Te permiten hacer 1 pregunta al Dios del medio: '¿Es el Dios de la Izquierda el Dios del Azar?'. Él responde 'SÍ'. ¿Quién es con certeza el Dios de la Derecha?", 
+                options: ["No es el Dios del Azar", "Es el Dios de la Verdad", "Es el Dios de la Mentira", "Es el Dios del Azar"], 
+                correct: 0 
+            }
+        };
+
+        // ================= ESTADO DEL JUEGO =================
+        let currentFloor = 1;
+        let failuresCount = 0;
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isTransitioning = false;
+
+        // ================= DISTRIBUCIÓN ALEATORIA DE RESPUESTAS =================
+        // Cada bloque de cuatro acertijos usa las cuatro posiciones correctas
+        // una vez, en orden aleatorio. Así se evita que la respuesta sea siempre A.
+        const riddleLayouts = {};
+        let answerPositionBag = [];
+        let lastCorrectPosition = -1;
+
+        function shuffleArray(items) {
+            const shuffled = [...items];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function createRiddleLayout(riddle, floor) {
+            // Mantiene el mismo orden si se vuelve a visitar un piso.
+            if (riddleLayouts[floor]) return riddleLayouts[floor];
+
+            if (answerPositionBag.length === 0) {
+                answerPositionBag = shuffleArray([0, 1, 2, 3]);
+                const lastIndex = answerPositionBag.length - 1;
+                if (answerPositionBag[lastIndex] === lastCorrectPosition) {
+                    [answerPositionBag[lastIndex], answerPositionBag[0]] =
+                        [answerPositionBag[0], answerPositionBag[lastIndex]];
+                }
+            }
+
+            const correctPosition = answerPositionBag.pop();
+            lastCorrectPosition = correctPosition;
+            const correctOption = riddle.options[riddle.correct];
+            const wrongOptions = shuffleArray(
+                riddle.options.filter((option, index) => index !== riddle.correct)
+            );
+
+            const mixedOptions = [];
+            let wrongIndex = 0;
+            for (let i = 0; i < 4; i++) {
+                if (i === correctPosition) {
+                    mixedOptions.push(correctOption);
+                } else {
+                    mixedOptions.push(wrongOptions[wrongIndex]);
+                    wrongIndex++;
+                }
+            }
+
+            const layout = { options: mixedOptions, correctIndex: correctPosition };
+            riddleLayouts[floor] = layout;
+            return layout;
+        }
+
+        // Web Audio API
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'door') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(60, now + 1.2);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 1.2);
+                    osc.start(now);
+                    osc.stop(now + 1.2);
+                } else if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    // Sonido suave de error (desciendes solo 1 piso)
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(261.63, now);
+                    osc.frequency.exponentialRampToValueAtTime(174.61, now + 0.35);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'victory') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.15);
+                    osc.frequency.setValueAtTime(783.99, now + 0.3);
+                    osc.frequency.setValueAtTime(1046.50, now + 0.45);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.9);
+                    osc.start(now);
+                    osc.stop(now + 0.9);
+                }
+            } catch (e) {
+                console.log("Audio inactivo");
+            }
+        }
+
+        // ================= INICIALIZACIÓN =================
+        window.onload = function() {
+            startTimer();
+            updateHeaderUI();
+        };
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerSeconds = 0;
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('stat-time').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function updateHeaderUI() {
+            document.getElementById('current-floor-display').innerText = `${currentFloor} / 100`;
+            document.getElementById('stat-failures').innerText = failuresCount;
+
+            const fillPercentage = Math.max(1, Math.min(100, currentFloor));
+            document.getElementById('progress-bar-fill').style.width = `${fillPercentage}%`;
+        }
+
+        // ================= INTERACCIÓN PISO 1 (PUERTA) =================
+        function openFirstDoor() {
+            if (isTransitioning) return;
+            initAudio();
+            isTransitioning = true;
+
+            playSound('door');
+
+            const leftDoor = document.getElementById('door-left');
+            const rightDoor = document.getElementById('door-right');
+            const doorBtn = document.getElementById('door-btn');
+
+            leftDoor.classList.add('door-open-left');
+            rightDoor.classList.add('door-open-right');
+            doorBtn.style.opacity = '0';
+            doorBtn.style.transform = 'scale(0.5)';
+
+            setTimeout(() => {
+                currentFloor = 2;
+                updateHeaderUI();
+
+                document.getElementById('floor-1-view').classList.add('hidden');
+                document.getElementById('riddle-view').classList.remove('hidden');
+
+                loadRiddle(currentFloor);
+                isTransitioning = false;
+                showToast("¡PORTAL ABIERTO!", "Comienzas tu reto en el Piso 2", "fa-solid fa-door-open text-sanctuary-gold", "border-sanctuary-gold");
+            }, 1400);
+        }
+
+        // ================= CARGA DE ACERTIJOS (PISOS 2-100) =================
+        function loadRiddle(floor) {
+            const riddle = RIDDLES[floor];
+            if (!riddle) return;
+
+            const layout = createRiddleLayout(riddle, floor);
+
+            const riddleCard = document.getElementById('riddle-card');
+            riddleCard.classList.remove('anim-descend');
+            riddleCard.classList.add('anim-ascend');
+
+            document.getElementById('riddle-type').innerText = riddle.type;
+            document.getElementById('riddle-difficulty').innerText = `Dificultad: ${riddle.difficulty}`;
+            document.getElementById('riddle-question').innerHTML = riddle.question;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            layout.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full p-4 rounded-xl bg-sanctuary-800/90 border border-purple-500/20 text-left hover:border-sanctuary-gold hover:bg-sanctuary-700/80 flex items-center justify-between text-sm sm:text-base text-purple-100 cursor-pointer shadow-md";
+                btn.onclick = () => checkAnswer(index);
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-sanctuary-900 text-sanctuary-gold font-cinzel font-bold flex items-center justify-center border border-sanctuary-gold/30 text-xs">
+                            ${String.fromCharCode(65 + index)}
+                        </span>
+                        <span>${optText}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            setTimeout(() => {
+                riddleCard.classList.remove('anim-ascend');
+            }, 500);
+        }
+
+        // ================= VERIFICACIÓN DE RESPUESTA (-1 PISO SI FALLAS) =================
+        function checkAnswer(selectedIndex) {
+            if (isTransitioning) return;
+            initAudio();
+            isTransitioning = true;
+
+            const layout = riddleLayouts[currentFloor];
+            const isCorrect = layout && selectedIndex === layout.correctIndex;
+
+            if (isCorrect) {
+                playSound('correct');
+                
+                if (currentFloor === 100) {
+                    finishGame();
+                } else {
+                    currentFloor++;
+                    updateHeaderUI();
+                    showToast("¡CORRECTO!", `Asciendes al Piso ${currentFloor}`, "fa-solid fa-arrow-up text-emerald-400", "border-emerald-500");
+                    
+                    setTimeout(() => {
+                        loadRiddle(currentFloor);
+                        isTransitioning = false;
+                    }, 800);
+                }
+            } else {
+                // PENALIZACIÓN SUAVE: SOLO BAJA 1 PISO (mínimo Piso 1)
+                playSound('wrong');
+                failuresCount++;
+
+                if (currentFloor > 1) {
+                    currentFloor--;
+                }
+
+                updateHeaderUI();
+
+                const riddleCard = document.getElementById('riddle-card');
+                riddleCard.classList.add('anim-descend');
+
+                showToast("INCORRECTO", `Bajas a Piso ${currentFloor}`, "fa-solid fa-arrow-down text-purple-400", "border-purple-500");
+
+                setTimeout(() => {
+                    riddleCard.classList.remove('anim-descend');
+
+                    if (currentFloor === 1) {
+                        document.getElementById('riddle-view').classList.add('hidden');
+                        document.getElementById('floor-1-view').classList.remove('hidden');
+
+                        document.getElementById('door-left').classList.remove('door-open-left');
+                        document.getElementById('door-right').classList.remove('door-open-right');
+                        const doorBtn = document.getElementById('door-btn');
+                        doorBtn.style.opacity = '1';
+                        doorBtn.style.transform = 'scale(1)';
+                    } else {
+                        loadRiddle(currentFloor);
+                    }
+                    isTransitioning = false;
+                }, 800);
+            }
+        }
+
+        // ================= MOSTRAR TOAST =================
+        function showToast(title, desc, iconClass, borderColor) {
+            const toast = document.getElementById('floor-toast');
+            const card = document.getElementById('toast-card');
+            const icon = document.getElementById('toast-icon');
+            const titleEl = document.getElementById('toast-title');
+            const descEl = document.getElementById('toast-desc');
+
+            card.className = `glass-panel px-8 py-6 rounded-2xl shadow-2xl text-center transform transition-all duration-300 scale-100 border-2 ${borderColor}`;
+            icon.className = `text-4xl mb-2 ${iconClass}`;
+            titleEl.innerText = title;
+            descEl.innerText = desc;
+
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 1200);
+        }
+
+        // ================= PANTALLA FINAL DE VICTORIA =================
+        function finishGame() {
+            clearInterval(timerInterval);
+            playSound('victory');
+
+            document.getElementById('riddle-view').classList.add('hidden');
+            document.getElementById('victory-view').classList.remove('hidden');
+
+            const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+            const secs = String(timerSeconds % 60).padStart(2, '0');
+
+            document.getElementById('final-time').innerText = `${mins}:${secs}`;
+            document.getElementById('final-failures').innerText = failuresCount;
+            isTransitioning = false;
+        }
+
+        // ================= REINICIAR JUEGO =================
+        function restartGame() {
+            currentFloor = 1;
+            failuresCount = 0;
+            isTransitioning = false;
+
+            // Al reiniciar se vuelve a generar una distribución aleatoria.
+            Object.keys(riddleLayouts).forEach(key => {
+                delete riddleLayouts[key];
+            });
+            answerPositionBag = [];
+            lastCorrectPosition = -1;
+
+            updateHeaderUI();
+            startTimer();
+
+            document.getElementById('victory-view').classList.add('hidden');
+            document.getElementById('floor-1-view').classList.remove('hidden');
+
+            document.getElementById('door-left').classList.remove('door-open-left');
+            document.getElementById('door-right').classList.remove('door-open-right');
+            const doorBtn = document.getElementById('door-btn');
+            doorBtn.style.opacity = '1';
+            doorBtn.style.transform = 'scale(1)';
+        }
+    </script>
+</body>
+</html>
